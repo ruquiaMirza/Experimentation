@@ -25,7 +25,7 @@ class EmbeddingGenerator():
 
 
         def load_data_to_vector(self,data):
-            #gemini=GeminiCustomGenerativeAI(api_key = "AIzaSyByiW63sAFgRYHCsIUkgwWi_fJNAffS1h4")
+            
 
             embeddings=[]
             for text in data:
@@ -39,8 +39,7 @@ class EmbeddingGenerator():
                 )
 
         def chroma_search_similar_texts(self, chroma_query, k=3):
-            #gemini = GeminiCustomGenerativeAI(api_key="AIzaSyByiW63sAFgRYHCsIUkgwWi_fJNAffS1h4")
-
+           
             query_embedding = self.llmcall.get_embeddings(chroma_query)
             results = self.collection.query(
                 query_embeddings=[query_embedding],
@@ -57,8 +56,7 @@ class EmbeddingGenerator():
 
 
         def load_data_to_vector(self,data):
-            # if llm=="gemini":
-            #     gemini=GeminiCustomGenerativeAI(api_key = "AIzaSyByiW63sAFgRYHCsIUkgwWi_fJNAffS1h4")
+        
             # Initialize FAISS index
             # Generate embeddings and add them to the index
 
