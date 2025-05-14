@@ -49,7 +49,7 @@ class GeminiCustomGenerativeAI():
             response.raise_for_status()  # Raise an exception for HTTP errors
             result=response.json()
             print(result)
-            return result['candidates'][0]['content']['parts'][0]['text']
+            return {"generations":result['candidates'][0]['content']['parts'][0]['text'], "stats":{"input_tokens":[result['usageMetadata']['promptTokenCount']],"output_tokens":[result['usageMetadata']['candidatesTokenCount']]}}
         except requests.exceptions.RequestException as e:
             return {"error": str(e)}
 
@@ -88,13 +88,16 @@ if __name__ == "__main__":
 
     # Generate content
     try:
-        response = custom_ai.generate_content(prompt="Tell me a joke")
-        # model = "gemini-2.0-flash",
+        response = custom_ai.generate_content\
+            (prompt="Context: The dough will be soft and the chocolate chips may not stick because of the melted butter. Just keep stirring it; I promise it will come together. Because of the melted butter and extra egg yolk, the slick dough doesn’t even look like normal cookie dough! Trust the process…\ "
+                    "Query: Assess whether chilling the dough before baking would help."\
+                    "Can the query get answer from only context without any additional knowledge and reasoning?"
+             ),
         # prompt = prompt,
         # temperature = 0.6,
         # max_output_tokens = 150
         print("Generated Content:")
-
+        print(type(response))
         print(response)
     except ValueError as ve:
         print(f"Input Error: {ve}")
