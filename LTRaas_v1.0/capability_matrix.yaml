@@ -1,0 +1,53 @@
+# capability_matrix.yaml — maps unified vulnerability categories to engine plugins.
+# Edit this file to add, remove, or remap categories without touching any Python code.
+#
+# Schema per entry:
+#   <category_id>:
+#     engine:      "promptfoo" | "garak"
+#     plugins:     list of engine-native plugin IDs
+#     strategies:  list of engine-native strategy IDs
+#     applies_to:  list of system types this category is valid for
+#                  (chatbot | rag | tool_agent)
+
+prompt_injection:
+  engine: promptfoo
+  plugins:
+    - hijacking
+  strategies:
+    - prompt-injection
+  applies_to:
+    - chatbot
+    - rag
+    - tool_agent
+
+secret_leak:
+  engine: promptfoo
+  plugins:
+    - pii:api-db      # API / database key exposure
+    - pii:session     # session token exposure
+  strategies:
+    - basic
+  applies_to:
+    - chatbot
+    - rag
+
+off_topic:
+  engine: promptfoo
+  plugins:
+    - rbac            # role / scope boundary bypass
+  strategies:
+    - basic
+  applies_to:
+    - chatbot
+    - tool_agent
+
+jailbreak:
+  engine: promptfoo
+  plugins:
+    - jailbreak
+  strategies:
+    - basic
+  applies_to:
+    - chatbot
+    - rag
+    - tool_agent

@@ -1,0 +1,99 @@
+# scan_config.yaml — edit this file to configure your red-team scan.
+# No Python changes needed.
+#
+# Required env vars must be exported before running:
+#   export GEMINI_API_KEY=AIza...
+#   python main.py
+
+
+# ─── Engine ────────────────────────────────────────────────────────────────────
+# mock      — simulated responses, no API keys needed. Good for testing the pipeline.
+# llm       — real HTTP calls to the target + a judge LLM.
+# promptfoo — shells out to the promptfoo CLI (requires Node.js).
+engine: llm
+
+
+# ─── Models ────────────────────────────────────────────────────────────────────
+# Three roles:
+#   target           — the application being red-teamed
+#   judge            — grades each response (required for llm and promptfoo)
+#   attack_generator — generates adversarial prompts (required for promptfoo)
+#
+# Supported providers: google | openai | anthropic | custom
+# The endpoint URL is built automatically from provider + model.
+# api_key_env names the environment variable that holds the API key.
+models:
+
+  # ── Target ──────────────────────────────────────────────────────────────────
+  target:
+    provider: google
+    model: gemini-2.5-flash
+    api_key_env: GEMINI_API_KEY
+
+    # If you can't use an env var, set the key directly here (not recommended):
+    # api_key: ""
+
+  # ── Custom endpoint (use when you don't know the underlying LLM) ────────────
+  # Replace the target block above with this when the app has a non-standard API.
+  #
+  # target:
+  #   provider: custom
+  #   url: "https://myapp.com/api/chat"
+  #   request_body: '{"message": "{{prompt}}"}'   # {{prompt}} is replaced per probe
+  #   transform_response: "json.reply"             # JS expression to extract the reply
+  #   auth_header: "Authorization"                 # header that carries the key (optional)
+  #   auth_prefix: "Bearer "                       # prefix before the key value (optional)
+  #   api_key_env: MY_APP_API_KEY
+
+  # ── Judge ───────────────────────────────────────────────────────────────────
+  judge:
+    provider: google
+    model: gemini-2.5-flash
+
+  # ── Attack generator ────────────────────────────────────────────────────────
+  attack_generator:
+    provider: google
+    model: gemini-2.5-flash
+
+
+# ─── Target metadata ───────────────────────────────────────────────────────────
+# Describes the application being tested. The attack generator uses `purpose`
+# to craft relevant probes; the judge uses it to evaluate responses in context.
+target:
+  name: "PizzaBot Production"
+  system_type: chatbot          # chatbot | rag | tool_agent
+  purpose: >
+    A customer-service chatbot for a pizza chain.
+    Must never reveal the secret sauce recipe,
+    never discuss topics other than pizza orders,
+    and never share internal pricing rules.
+
+
+# ─── Scan parameters ───────────────────────────────────────────────────────────
+scan:
+  name: "weekly redteam"
+
+  # How many times each probe is sent to the target.
+  # Used by: mock, llm
+  llm_repetitions: 3
+
+  # Number of test cases generated per plugin.
+  # Used by: promptfoo
+  promptfoo_num_tests: 5
+
+  # Max parallel requests sent to the target at once.
+  # Lower if you hit rate limits; raise to speed up large scans.
+  # Used by: promptfoo
+  promptfoo_concurrency: 4
+
+  # Attack categories to run. Choose from:
+  #   prompt_injection  — attempt to hijack the model's instructions
+  #   secret_leak       — probe for PII, credentials, or internal data
+  #   off_topic         — check if the model stays within its intended scope
+  #   jailbreak         — try to bypass safety constraints
+  #
+  # promptfoo supports:   secret_leak, off_topic
+  # llm / mock support:   all four
+  categories:
+    - secret_leak
+    - off_topic
